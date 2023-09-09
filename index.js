@@ -1,58 +1,58 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
 const app = express();
-const bodyParser = require('body-parser');
-
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(cors());
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 
-app.use('/public', express.static(`${process.cwd()}/public`));
+app.use("/public", express.static(`${process.cwd()}/public`));
 
-app.get('/', function(req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
+app.get("/", function (req, res) {
+  res.sendFile(process.cwd() + "/views/index.html");
 });
 
 // Your first API endpoint
-app.get('/api/hello', function(req, res) {
-  res.json({ greeting: 'hello API' });
+app.get("/api/hello", function (req, res) {
+  res.json({ greeting: "hello API" });
 });
 
-app.post('/api/shorturl', (req, res) => {
+const generateShortUrl = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const urlStorage = new Map();
+let shortUrlCounter = generateShortUrl(10, 9999);
+
+app.post("/api/shorturl", (req, res) => {
   const originalUrl = req.body.url;
 
-  let urlDatabase = [];
-let nextShortUrl = 1;
-
-  
-
-  // Generate a short URL
-  const shortUrl = nextShortUrl++;
-  urlDatabase.push({ originalUrl, shortUrl });
+  // Simpan URL pendek dalam penyimpanan
+  const shortUrl = shortUrlCounter++;
+  urlStorage.set(shortUrl, originalUrl);
 
   res.json({ original_url: originalUrl, short_url: shortUrl });
 });
 
-app.get('/api/shorturl/:shortUrl', (req, res) => {
-  const shortUrl = parseInt(req.params.shortUrl);
+app.get('/api/shorturl/:short_url', (req, res) => {
+  const shortUrl = parseInt(req.params.short_url);
 
-  // Find the original URL in the database
-  const entry = urlDatabase.find((entry) => entry.shortUrl === shortUrl);
-
-  if (!entry) {
-    return res.json({ error: 'short url not found' });
+  if (urlStorage.has(shortUrl)) {
+    const originalUrl = urlStorage.get(shortUrl);
+    res.redirect(originalUrl);
+  } else {
+    res.json({ error: 'URL pendek tidak ditemukan' });
   }
-
-  res.redirect(entry.originalUrl);
 });
 
-
-
-app.listen(port, function() {
+app.listen(port, function () {
   console.log(`Listening on port ${port}`);
 });

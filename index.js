@@ -26,15 +26,10 @@ app.get('/api/hello', function(req, res) {
 app.post('/api/shorturl', (req, res) => {
   const originalUrl = req.body.url;
 
-  const urlDatabase = [];
+  let urlDatabase = [];
 let nextShortUrl = 1;
 
   
-  // Check if the URL is valid
-  const urlPattern = /^(https:\/\/www\..+\..+)$/i; // Valid URL pattern
-  if (!urlPattern.test(originalUrl)) {
-    return res.json({ error: 'invalid url' });
-  }
 
   // Generate a short URL
   const shortUrl = nextShortUrl++;

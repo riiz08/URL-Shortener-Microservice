@@ -26,27 +26,7 @@ app.get("/api/hello", function (req, res) {
 });
 
 
-const generateShortUrl = () => {
-  return Math.floor(Math.random() * 1000) + 1;
-};
 
-// Daftar penyimpanan untuk URL pendek
-const urlStorage = new Map();
-let shortUrlCounter = 1;
-
-
-app.post('/api/shorturl', (req, res) => {
-  const originalUrl = req.body.url;
-
-    // Validasi URL harus dimulai dengan "https://"
-  const urlRegex = /^https:\/\/.*/;
-
-  if (!urlRegex.test(originalUrl)) {
-    return res.json({ error: 'Invalid URL' });
-  }
-
-  
-const shortUrl = shortUrlCounter++;
 
 const generateShortUrl = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -62,6 +42,12 @@ app.post("/api/shorturl", (req, res) => {
   const shortUrl = shortUrlCounter++;
 
   urlStorage.set(shortUrl, originalUrl);
+      // Validasi URL harus dimulai dengan "https://"
+  const urlRegex = /^https:\/\/.*/;
+
+  if (!urlRegex.test(originalUrl)) {
+    return res.json({ error: 'Invalid URL' });
+  }
 
   res.json({ original_url: originalUrl, short_url: shortUrl });
 });
@@ -79,16 +65,6 @@ app.get('/api/shorturl/:short_url', (req, res) => {
 });
 
 
-app.get('/api/shorturl/:short_url', (req, res) => {
-  const shortUrl = parseInt(req.params.short_url);
-
-  if (urlStorage.has(shortUrl)) {
-    const originalUrl = urlStorage.get(shortUrl);
-    res.redirect(originalUrl);
-  } else {
-    res.json({ error: 'URL pendek tidak ditemukan' });
-  }
-});
 
 
 app.listen(port, function () {
